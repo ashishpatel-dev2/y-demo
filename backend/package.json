@@ -1,0 +1,21 @@
+{
+  "name": "todo-backend",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/index.js",
+    "dev": "node --watch --env-file-if-exists=.env src/index.js",
+    "db:create": "node --env-file-if-exists=.env scripts/create-db.cjs",
+    "db:migrate": "node --env-file-if-exists=.env node_modules/sequelize-cli/lib/sequelize db:migrate",
+    "db:migrate:undo": "node --env-file-if-exists=.env node_modules/sequelize-cli/lib/sequelize db:migrate:undo",
+    "db:setup": "npm run db:create && npm run db:migrate"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "pg": "^8.13.1",
+    "sequelize": "^6.37.8",
+    "sequelize-cli": "^6.6.5"
+  }
+}

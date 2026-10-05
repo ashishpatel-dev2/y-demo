@@ -1,0 +1,30 @@
+services:
+  # One-off job: creates the database and runs Sequelize migrations, then exits.
+  # On AWS the same command runs as a one-off ECS task before deploying.
+  migrate:
+    build: ./backend
+    command: ["npm", "run", "db:setup"]
+    env_file: ./backend/.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  backend:
+    build: ./backend
+    # RDS connection details come from backend/.env
+    env_file: ./backend/.env
+    # lets the container reach PostgreSQL running on the host machine
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  frontend:
+    # VITE_API_URL is read from frontend/.env when the image is built
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

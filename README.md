@@ -17,12 +17,19 @@ Browser ──► frontend (nginx :80) ──/api──► backend (Node/Express
    - your own IP (only if you want to run the app from your laptop; also set *Public access = Yes*).
 4. Copy the **Endpoint** once the DB is "Available".
 
-## 2. Configure
+## 2. Configure (separate env per app)
 
 ```bash
-cp .env.example .env
-# edit .env: DB_HOST=<rds-endpoint>, DB_USER, DB_PASSWORD, DB_NAME=todos, DB_SSL=true
+cp backend/.env.example backend/.env     # RDS: DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_SSL=true
+cp frontend/.env.example frontend/.env   # VITE_API_URL (default /api)
 ```
+
+| File | Used by | When it's read |
+|------|---------|----------------|
+| `backend/.env` | Node backend | At **runtime** (docker-compose `env_file`, or `npm run dev` via `node --env-file`) |
+| `frontend/.env` | React (Vite) | At **build time**, baked into the JS bundle. Rebuild after changing it: `docker compose up -d --build frontend` |
+
+Only put public values in `frontend/.env`. Everything in it ends up in the browser.
 
 ## 3. Run with Docker
 
@@ -38,7 +45,7 @@ If the backend keeps logging `DB not ready ... retrying`, it can't reach RDS. Ch
 ## Run without Docker (development)
 
 ```bash
-cd backend && npm install && export $(grep -v '^#' ../.env | xargs) && npm run dev
+cd backend && npm install && npm run dev     # loads backend/.env automatically
 cd frontend && npm install && npm run dev   # Vite proxies /api to localhost:5000
 ```
 
@@ -57,7 +64,7 @@ cd frontend && npm install && npm run dev   # Vite proxies /api to localhost:500
 1. **EC2 + RDS (start here)**
    - Launch EC2 (Amazon Linux / Ubuntu), security group open on 80 (and 22 for SSH).
    - Add the EC2 security group to the RDS security group's inbound 5432 rule.
-   - Install Docker + compose plugin, copy this folder, create `.env`, `docker compose up -d --build`.
+   - Install Docker + compose plugin, copy this folder, create `backend/.env` and `frontend/.env`, `docker compose up -d --build`.
 
 2. **ECR + ECS Fargate + ALB (next step)**
    - Push both images to ECR; create ECS services behind an Application Load Balancer.

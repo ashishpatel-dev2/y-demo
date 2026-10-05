@@ -1,0 +1,7 @@
+// Tells sequelize-cli where the DB config and migrations live
+const path = require("path");
+
+module.exports = {
+  config: path.resolve("src", "db-config.cjs"),
+  "migrations-path": path.resolve("migrations"),
+};
